@@ -1,27 +1,49 @@
-"use strict";
+const startButton = document.getElementById('start-button');
+const resetButton = document.getElementById('reset-button');
+const steps = document.getElementById('steps');
+const status = document.getElementById('status');
 
-const startButton = document.querySelector("#start-button");
-const resetButton = document.querySelector("#reset-button");
-const steps = document.querySelector("#steps");
-const status = document.querySelector("#status");
-let timerId = null;
 let isRunning = false;
+let currentTimer = null;
 
-// TODO 1. Функция должна запланировать один этап через 700 мс.
-// После задержки: создайте li, запишите text, добавьте li в steps.
-// Затем, если передан next, вызовите next().
-function runStep(text, next) {}
+// Задания 1 и 2
+function runStep(text, next) {
+  currentTimer = setTimeout(() => {
+    const li = document.createElement('li');
+    li.textContent = text;
+    steps.appendChild(li);
+    status.textContent = text;
 
-// TODO 2. Свяжите три этапа вложенными callback-функциями:
-// «Заказ принят» → «Проверка выполнена» → «Заказ готов».
-// После последнего этапа верните isRunning = false и включите кнопку.
-startButton.addEventListener("click", () => {
+    if (typeof next === 'function') {
+      next();
+    }
+  }, 700);
+}
+
+// Задания 3 и 4
+startButton.addEventListener('click', () => {
   if (isRunning) return;
+
   isRunning = true;
   startButton.disabled = true;
-  steps.replaceChildren();
-  status.textContent = "Выполняем заказ...";
+  steps.replaceChildren(); // Очищаем старый список перед новым запуском
+
+  runStep('Заказ принят', () => {
+    runStep('Проверка выполнена', () => {
+      runStep('Заказ готов', () => {
+        isRunning = false;
+        startButton.disabled = false;
+        status.textContent = 'Все этапы завершены';
+      });
+    });
+  });
 });
 
-// TODO 3. Отмените текущий таймер и верните интерфейс к началу.
-resetButton.addEventListener("click", () => {});
+// Задание 5
+resetButton.addEventListener('click', () => {
+  clearTimeout(currentTimer);
+  isRunning = false;
+  steps.replaceChildren();
+  startButton.disabled = false;
+  status.textContent = 'Ожидание нового заказа.';
+});
