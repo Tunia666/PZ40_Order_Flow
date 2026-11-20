@@ -1,27 +1,47 @@
-"use strict";
+'use strict';
 
-const startButton = document.querySelector("#start-button");
-const resetButton = document.querySelector("#reset-button");
-const steps = document.querySelector("#steps");
-const status = document.querySelector("#status");
+const startButton = document.querySelector('#start-button');
+const resetButton = document.querySelector('#reset-button');
+const steps = document.querySelector('#steps');
+const status = document.querySelector('#status');
+
 let timerId = null;
 let isRunning = false;
+function runStep(text, next) {
+  timerId = setTimeout(() => {
+    const li = document.createElement('li');
+    li.textContent = text;
+    steps.append(li);
 
-// TODO 1. Функция должна запланировать один этап через 700 мс.
-// После задержки: создайте li, запишите text, добавьте li в steps.
-// Затем, если передан next, вызовите next().
-function runStep(text, next) {}
-
-// TODO 2. Свяжите три этапа вложенными callback-функциями:
-// «Заказ принят» → «Проверка выполнена» → «Заказ готов».
-// После последнего этапа верните isRunning = false и включите кнопку.
-startButton.addEventListener("click", () => {
+    if (typeof next === 'function') {
+      next();
+    }
+  }, 700);
+}
+startButton.addEventListener('click', () => {
   if (isRunning) return;
+
   isRunning = true;
   startButton.disabled = true;
   steps.replaceChildren();
-  status.textContent = "Выполняем заказ...";
-});
+  status.textContent = 'Выполняем заказ...';
 
-// TODO 3. Отмените текущий таймер и верните интерфейс к началу.
-resetButton.addEventListener("click", () => {});
+  runStep('Заказ принят', () => {
+    runStep('Проверка выполнена', () => {
+      runStep('Заказ готов', () => {
+        status.textContent = 'Заказ готов';
+        isRunning = false;
+        startButton.disabled = false;
+        timerId = null;
+      });
+    });
+  });
+});
+resetButton.addEventListener('click', () => {
+  clearTimeout(timerId);
+  timerId = null;
+  isRunning = false;
+  startButton.disabled = false;
+  steps.replaceChildren();
+  status.textContent = '';
+});
